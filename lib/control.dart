@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:weather_icons/weather_icons.dart';
+
 
 class ChatPage extends StatefulWidget {
   final BluetoothDevice server;
@@ -21,7 +23,6 @@ class _Message {
 }
 
 class _ChatPage extends State<ChatPage> {
-  TimeOfDay alarma;
   static final clientID = 0;
   BluetoothConnection connection;
 
@@ -85,7 +86,6 @@ class _ChatPage extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    TimeOfDay alarma;
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -94,55 +94,94 @@ class _ChatPage extends State<ChatPage> {
         body: Card(
           child: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                SizedBox(
-                  height: 50,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.blue[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(Icons.amp_stories),
+                          tooltip: "Mensaje",
+                          onPressed:
+                              isConnected ? () => _sendMessage("b") : null),
+                    ),
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.green[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(Icons.access_time),
+                          tooltip: "Mensaje",
+                          onPressed: isConnected ? () => _reloj() : null),
+                    ),
+                  ],
                 ),
-                Ink(
-                  height: 80,
-                  width: 80,
-                  decoration: ShapeDecoration(
-                      color: Colors.green[300], shape: CircleBorder()),
-                  child: IconButton(
-                      icon: Icon(Icons.access_time),
-                      tooltip: "Mensaje",
-                      onPressed: isConnected
-                          ? () => _sendMessage("Modo reloj")
-                          : null),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.blue[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(Icons.alarm_add),
+                          tooltip: "Mensaje",
+                          onPressed: isConnected ? () => _alarma() : null),
+                    ),
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.purple[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(Icons.add_photo_alternate),
+                          tooltip: "Mensaje",
+                          onPressed: isConnected
+                              ? () => _fondos()
+                              : null),
+                    ),
+
+                  ],
                 ),
-                SizedBox(
-                  height: 150,
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.blue[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(WeatherIcons.thermometer),
+                          tooltip: "Mensaje",
+                          onPressed: isConnected ? () => _sendMessage("t") : null),
+                    ),
+                    Ink(
+                      height: 80,
+                      width: 80,
+                      decoration: ShapeDecoration(
+                          color: Colors.purple[300], shape: CircleBorder()),
+                      child: IconButton(
+                          icon: Icon(Icons.adjust),
+                          tooltip: "Mensaje",
+                          onPressed: isConnected
+                              ? () => _sendMessage("n")
+                              : null),
+                    ),
+
+                  ],
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Ink(
-                  height: 80,
-                  width: 80,
-                  decoration: ShapeDecoration(
-                      color: Colors.blue[300], shape: CircleBorder()),
-                  child: IconButton(
-                      icon: Icon(Icons.alarm_add),
-                      tooltip: "Mensaje",
-                      onPressed: isConnected
-                          ? () => _seleccionarHora()
-                          : null),
-                ),
-                SizedBox(
-                  height: 150,
-                ),
-                Ink(
-                  height: 80,
-                  width: 80,
-                  decoration: ShapeDecoration(
-                      color: Colors.purple[300], shape: CircleBorder()),
-                  child: IconButton(
-                      icon: Icon(Icons.add_photo_alternate),
-                      tooltip: "Mensaje",
-                      onPressed: isConnected
-                          ? () => _sendMessage("Cambiar fondo")
-                          : null),
-                ),
+
+
               ],
             ),
           ),
@@ -200,14 +239,29 @@ class _ChatPage extends State<ChatPage> {
     }
   }
 
-  void _seleccionarHora() async {
-    TimeOfDay newAlarma = await showTimePicker(context: context, initialTime: TimeOfDay(hour: 7));
-    
-    if (newAlarma != null) {
-      _sendMessage("Alarma = " + newAlarma.format(context));
-    }
+  Future<void> _reloj() async {
+    _sendMessage("r");
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ClockPage()),
+    );
+    print(result);
+    _sendMessage(result);
   }
-  
+
+  void _alarma() {
+    _sendMessage("a");
+  }
+
+  Future<void> _fondos() async {
+    _sendMessage("b");
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FondosPage()),
+    );
+    print(result);
+    _sendMessage(result);
+  }
 
   void _sendMessage(String text) async {
     text = text.trim();
@@ -233,5 +287,100 @@ class _ChatPage extends State<ChatPage> {
         setState(() {});
       }
     }
+  }
+}
+
+class ClockPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => new _ClockPage();
+}
+
+class _ClockPage extends State<ClockPage> {
+    int numero = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Center(
+              child: Column(
+        children: <Widget>[
+          SizedBox(height: 80),
+          RaisedButton(child: Text("+"), onPressed: _incrementCounter),
+          RaisedButton(child: Text("-"), onPressed: _decrementCounter),
+          RaisedButton(
+              child: Text("Config"),
+              onPressed: () {
+                Navigator.pop(context, numero.toString());
+              }),
+          FloatingActionButton(
+            child: Icon(Icons.arrow_back_outlined),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ))),
+    );
+  }
+
+  void _incrementCounter() {
+    setState(() {
+      numero++;
+    });
+  }
+
+  void _decrementCounter() {
+    setState(() {
+      numero--;
+    });
+  }
+}
+
+
+class FondosPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => new _FondosPage();
+}
+
+class _FondosPage extends State<FondosPage> {
+  int numero = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Center(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 80),
+                  RaisedButton(child: Text("+"), onPressed: _incrementCounter),
+                  RaisedButton(child: Text("-"), onPressed: _decrementCounter),
+                  RaisedButton(
+                      child: Text("Config"),
+                      onPressed: () {
+                        Navigator.pop(context, numero.toString());
+                      }),
+                  FloatingActionButton(
+                    child: Icon(Icons.arrow_back_outlined),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ))),
+    );
+  }
+
+  void _incrementCounter() {
+    setState(() {
+      numero++;
+    });
+  }
+
+  void _decrementCounter() {
+    setState(() {
+      numero--;
+    });
   }
 }
